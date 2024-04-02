@@ -401,11 +401,13 @@ class _network:
             e = str(e)
 
             # check if we need root access to open this socket
-            if e.find("An attempt was made to access a socket in a way forbidden by its access permissions") != -1:
-                return None
+            permission_denied = ['forbidden by its access permissions', 'Permission denied']
+            for pattern in permission_denied:
+                if e.find(pattern) != -1:
+                    return None
 
             # check if the socket is already open
-            elif e.find("Only one usage of each socket address (protocol/network address/port) is normally permitted") != -1 or e.find('Address already in use') != -1:
+            if e.find("Only one usage of each socket address (protocol/network address/port) is normally permitted") != -1 or e.find('Address already in use') != -1:
                 return True
             
             # check if this is an unknown error
