@@ -1,0 +1,8 @@
+setup.py
+shdo.py
+./shdo.py
+shdo.egg-info/PKG-INFO
+shdo.egg-info/SOURCES.txt
+shdo.egg-info/dependency_links.txt
+shdo.egg-info/entry_points.txt
+shdo.egg-info/top_level.txt
