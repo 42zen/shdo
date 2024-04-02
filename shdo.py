@@ -211,6 +211,7 @@ class _adb:
     # connect to the adb server
     def connect(verbose=False):
         global current_adb_port
+        global connected_adb_port
 
         # connect to the adb server with the last known port
         adb_server_port = _cache.load(verbose=verbose)
