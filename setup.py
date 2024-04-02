@@ -2,13 +2,14 @@ from setuptools import setup
 
 setup(
     name='shdo',
-    version='0.0.4',
+    version='0.0.7',
     packages=['shdo'],
     package_dir={'shdo': '.'},
     py_modules=['shdo'],
     entry_points={
         'console_scripts': [
-            'shdo = shdo:main'
+            'shdo = shdo:main',
+            'shdo-pair = shdo:main',
         ]
     },
     author='Zen',

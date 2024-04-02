@@ -29,12 +29,27 @@ ADB_SERVER_PORT_FILENAME = ".last_adb_server_port"
 
 
 # shdo global variables
+adb_is_paired = None
 current_adb_port = None
 connected_adb_port = None
 
 
-# main function
 def main():
+
+    # parse the command line parameters
+    argc = len(sys_argv)
+    argv = sys_argv
+
+    # check if there is no command
+    if argc > 0 and argv[0].find("shdo-pair") != -1:
+        return shdo_pair_main()
+    
+    # start the shdo main function
+    return shdo_main()
+
+
+# shdo main function
+def shdo_main():
 
     # parse the command line parameters
     argc = len(sys_argv)
@@ -63,6 +78,37 @@ def main():
     
     # end of process
     return result
+
+
+# shdo-pair main function
+def shdo_pair_main():
+
+    # check usage
+    if len(sys_argv) != 2:
+        print("Usage: shdo-pair <pair code>")
+        return 1
+    
+    # check if we're running the tool with termux
+    if 'TERMUX_VERSION' not in environ:
+        print("Error: You need to run this tool from Termux. If you want to run this tool anyway create the environment variable 'TERMUX_VERSION'.")
+        return 1
+    
+    # parse the pairing code
+    pairing_code = sys_argv[1]
+
+    # start the adb server
+    _adb.start_server()
+
+    # pair with the adb server
+    if _adb.pair(pairing_code) == False:
+
+        # print the error if needed
+        print("Error: Couldn't pair with the adb server. Do you still see the code in the split-screen windows ?")
+        return 1
+    
+    # end of process
+    print("shdo was successfully paired!")
+    return 0
 
 
 # run an elevated command
@@ -205,6 +251,56 @@ class _adb:
         # adb is not connected
         if verbose == True:
             print("[*] Checking adb status%s...disconnected." % (f" for port {current_adb_port}" if current_adb_port is not None else ""))
+        return False
+
+
+    # pair with the adb server
+    def pair(pairing_code):
+        global adb_is_paired
+
+        # find all the opened tcp ports
+        possible_ports = _network.scan_tcp_ports()
+
+        # find the new adb server pairing port with multi-thread brute-forcing
+        adb_is_paired = False
+        threads = []
+        for port in possible_ports:
+            thread = Thread(target=_adb.try_pair, args=(port, pairing_code))
+            thread.start()
+            threads.append(thread)
+
+        # wait for pairing
+        while len(enumerate_threads()) != 1:
+            if adb_is_paired == True:
+                break
+            continue
+        if adb_is_paired == False:
+            for thread in threads:
+                thread.join()
+        
+        # check if we found the adb server port
+        if adb_is_paired == True:
+            return True
+
+        # connection failed
+        return False
+    
+
+    # try to pair with a adb server
+    def try_pair(adb_server_port, pairing_code):
+        global adb_is_paired
+
+        # run the adb pair command
+        result = _adb.command(f"pair 127.0.0.1:{adb_server_port} {pairing_code}")
+        if result is None:
+            return False
+
+        # check if the pairing was successfull
+        if result[0].find("Successfully paired to") != -1:
+            adb_is_paired = True
+            return True
+        
+        # the pairing failed
         return False
 
 
