@@ -18,7 +18,7 @@ from os import system
 from subprocess import Popen, PIPE
 
 # import the thread object
-from threading import Thread
+from threading import Thread, enumerate as enumerate_threads
 
 
 # shdo settings
@@ -225,15 +225,23 @@ class _adb:
         if verbose == True:
             print("[*] Trying to connect to the open ports...")
 
-        # find the new adb server port with brute-forcing
+        # find the new adb server port with multi-thread brute-forcing
         current_adb_port = None
+        connected_adb_port = None
         threads = []
         for port in possible_ports:
             thread = Thread(target=_adb.try_connect, args=(port, verbose))
             thread.start()
             threads.append(thread)
-        for thread in threads:
-            thread.join()
+
+        # wait for adb to connect
+        while len(enumerate_threads()) != 1:
+            if connected_adb_port is not None:
+                break
+            continue
+        if connected_adb_port is None:
+            for thread in threads:
+                thread.join()
         
         # check if we found the adb server port
         if connected_adb_port is not None:
