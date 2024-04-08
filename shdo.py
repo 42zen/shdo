@@ -114,6 +114,12 @@ def shdo_pair_main():
 # run an elevated command
 def run_command(command, parameters, verbose=False):
 
+    # check if the adb daemon is running
+    result = _terminal.run_command("getprop init.svc.adbd")[0].strip(' \n\t\r')
+    if result != 'running':
+        print("Error: The ADB daemon is not running. Start Wireless Debugging from the Developer Settings.")
+        return None
+
     # start the adb server
     _adb.start_server(verbose=verbose)
 
