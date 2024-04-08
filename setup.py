@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='shdo',
-    version='0.0.7',
+    version='0.0.8',
     packages=['shdo'],
     package_dir={'shdo': '.'},
     py_modules=['shdo'],
@@ -12,7 +12,7 @@ setup(
             'shdo-pair = shdo:main',
         ]
     },
-    author='Zen',
+    author='Mathias Bochet (aka Zen)',
     description='A tool to escalate privileges in Android',
     long_description='Shdo is a tool that helps you run elevated commands in Android (similar to sudo) without requiring root access. It utilizes debug privileges instead of root privileges.',
     url='https://github.com/42zen/shdo',

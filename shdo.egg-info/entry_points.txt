@@ -1,2 +1,3 @@
 [console_scripts]
 shdo = shdo:main
+shdo-pair = shdo:main
