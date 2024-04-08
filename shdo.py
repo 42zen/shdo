@@ -64,6 +64,7 @@ def shdo_main():
     # parse the command line parameters
     sys_argc = len(sys_argv)
     command = None
+    parameters = None
     if sys_argc > 1:
         command = sys_argv[1]
         if sys_argc > 2:
