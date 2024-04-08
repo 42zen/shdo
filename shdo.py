@@ -51,28 +51,24 @@ def main():
 # shdo main function
 def shdo_main():
 
-    # parse the command line parameters
-    argc = len(sys_argv)
-    argv = sys_argv
-
-    # check usage
-    if argc <= 1:
-        print("Usage: shdo <command> [parameters]")
-        return 1
-    
     # check if we're running the tool with termux
     if 'TERMUX_VERSION' not in environ:
         print("Error: You need to run this tool from Termux. If you want to run this tool anyway create the environment variable 'TERMUX_VERSION'.")
         return 1
     
-    # build the command
-    parameters = ""
-    if argc >= 3:
-        for parameter in argv[2:]:
-            parameters += f" '{parameter}'"
+    # parse the command line parameters
+    sys_argc = len(sys_argv)
+    command = None
+    if sys_argc > 1:
+        command = sys_argv[1]
+        if sys_argc > 2:
+            parameters = ""
+            if sys_argc >= 3:
+                for parameter in sys_argv[2:]:
+                    parameters += f" '{parameter}'"
 
     # run the command
-    result = run_command(argv[1], parameters, verbose=False)
+    result = run_command(command, parameters, verbose=False)
     if result is None:
         return 1
     
@@ -136,7 +132,7 @@ def run_command(command, parameters, verbose=False):
             return None
         
     # auto-bounce the file or executable if needed
-    if SHDO_AUTO_BOUNCE == True:
+    if SHDO_AUTO_BOUNCE == True and command is not None:
 
         # check if the command is an executable (bash, elf, ...)
         if file_exists(command) == True:
@@ -145,24 +141,30 @@ def run_command(command, parameters, verbose=False):
             if command.startswith("./") == True:
                 filename = command[2:]
 
-            # copy the file to the bounce folder
-            if verbose == True:
-                print(f"[*] Copying the file {filename} to bounce folder...", end='', flush=True)
-            bounce_path = SHDO_BOUNCE_FOLDER_PATH + filename
-            try:
-                file_copy(filename, bounce_path)
-            except SameFileError:
-                pass
-            if verbose == True:
-                print("done.")
+            # check if we're in a Termux folder
+            if _terminal.in_termux_folder() == True:
 
-            # copy the file to the debug folder
-            if verbose == True:
-                print(f"[*] Copying the file {filename} to debug folder...", end='', flush=True)
-            debug_path = SHDO_DEBUG_FOLDER_PATH + filename
-            _adb.shell(f"cp '{bounce_path}' '{debug_path}'")
-            if verbose == True:
-                print("done.")
+                # copy the file to the bounce folder
+                if verbose == True:
+                    print(f"[*] Copying the file {filename} to bounce folder...", end='', flush=True)
+                bounce_path = SHDO_BOUNCE_FOLDER_PATH + filename
+                try:
+                    file_copy(filename, bounce_path)
+                except SameFileError:
+                    pass
+                if verbose == True:
+                    print("done.")
+
+            # check if we're in a Termux folder
+            if _terminal.in_shell_folder() == False:
+
+                # copy the file to the debug folder
+                if verbose == True:
+                    print(f"[*] Copying the file {filename} to debug folder...", end='', flush=True)
+                debug_path = SHDO_DEBUG_FOLDER_PATH + filename
+                _adb.shell(f"cp '{bounce_path}' '{debug_path}'")
+                if verbose == True:
+                    print("done.")
 
             # give execution permission to the script or executable
             if verbose == True:
@@ -175,7 +177,7 @@ def run_command(command, parameters, verbose=False):
             command = debug_path
 
     # build the full command
-    full_command = f"'{command}' {parameters}"
+    full_command = f"'{command}' {parameters}" if command is not None else None
         
     # run the elevated command
     return _adb.execute(full_command, verbose=verbose)
@@ -187,18 +189,25 @@ class _adb:
     # execute an adb command
     def execute(command, verbose=False):
 
+        # build the command
+        full_command = f"adb -s 127.0.0.1:{current_adb_port} shell"
+        if command is not None:
+            full_command += f" '{command}'"
+            if verbose == True:
+                print("[*] Executing the command...\n")
+        elif verbose == True:
+            print("[*] Running the shell...\n")
+        
         # execute the command
-        if verbose == True:
-            print("[*] Executing the command...\n")
-        return system(f"adb -s 127.0.0.1:{current_adb_port} shell {command}")
+        return system(full_command)
 
 
     # run an adb command
-    def command(command):
+    def command(command, timeout=None):
 
         # run the terminal command
         command = f"adb {command}"
-        stdout, stderr = _terminal.run_command(command)
+        stdout, stderr = _terminal.run_command(command, timeout=timeout)
 
         # check if there was an error
         if stderr.startswith("adb: ") == True:
@@ -297,7 +306,7 @@ class _adb:
         global adb_is_paired
 
         # run the adb pair command
-        result = _adb.command(f"pair 127.0.0.1:{adb_server_port} {pairing_code}")
+        result = _adb.command(f"pair 127.0.0.1:{adb_server_port} {pairing_code}", timeout=1)
         if result is None:
             return False
 
@@ -362,7 +371,7 @@ class _adb:
         global connected_adb_port
 
         # run the adb connect command
-        result = _adb.command(f"connect 127.0.0.1:{adb_server_port}")
+        result = _adb.command(f"connect 127.0.0.1:{adb_server_port}", timeout=1)
         if result is None:
             if verbose == True:
                 print(f"[*] Can't connect to adb server {adb_server_port}.")
@@ -394,16 +403,29 @@ class _adb:
 class _terminal:
 
     # run a terminal command
-    def run_command(command):
+    def run_command(command, timeout=None):
 
         # open a process to run the command
-        process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+        if timeout is not None:
+            process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, timeout=timeout)
+        else:
+            process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate()
 
         # return the process (command) output
         stdout = stdout.decode()
         stderr = stderr.decode()
         return (stdout, stderr)
+    
+
+    # TODO: check if we are in a Termux folder
+    def in_termux_folder():
+        return False
+    
+
+    # TODO: check if we are in a Shell folder
+    def in_shell_folder():
+        return False
 
 
 # handle everything about cache
