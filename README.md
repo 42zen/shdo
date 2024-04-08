@@ -1,18 +1,15 @@
 # SHDO
 
-
-## What is Shdo ?
-
 Shdo is a tool to escalate privilege (like sudo) for Android that don't need any computer to be installed.
 
 
 ## Features
 
-- Fast pairing with 'shdo-pair'.
-- Fast command execution with 'shdo'.
-- Bruteforce all ports needed for pairing or execution.
-- Automatically move scripts or executables to permissive folders.
-- Check if the adb daemon is running.
+- Fast pairing with 'shdo-pair'
+- Fast command execution with 'shdo'
+- Bruteforce all ports needed for pairing or execution
+- Automatically move scripts or executables to permissive folders
+- Check if the adb daemon is running
 
 
 ## How to Install
@@ -52,4 +49,4 @@ If you don't want to do the pairing every few days/weeks you can disable the **a
 
 ## Credits
 
-- Mathias Bochet (aka Zen)
+- [Mathias Bochet](https://www.linkedin.com/in/mathias-bochet/) (aka Zen)
