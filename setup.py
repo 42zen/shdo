@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='shdo',
-    version='0.1.0',
+    version='0.1.1',
     packages=['shdo'],
     package_dir={'shdo': '.'},
     py_modules=['shdo'],

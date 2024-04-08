@@ -183,7 +183,8 @@ def run_command(command, parameters, verbose=False):
             command = debug_path
 
     # build the full command
-    full_command = f"'{command}' {parameters}" if command is not None else None
+    full_command = f"'{command}'" if command is not None else None
+    full_command += f" {parameters}" if parameters is not None else ""
         
     # run the elevated command
     return _adb.execute(full_command, verbose=verbose)

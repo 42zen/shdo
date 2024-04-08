@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: shdo
-Version: 0.1.0
+Version: 0.1.1
 Summary: A tool to escalate privileges in Android
 Home-page: https://github.com/42zen/shdo
 Author: Mathias Bochet (aka Zen)
