@@ -18,7 +18,12 @@ from os import system
 from subprocess import Popen, PIPE
 
 # import the thread object
-from threading import Thread, enumerate as enumerate_threads
+from threading import Thread, enumerate as enumerate_threads, Timer
+
+# import the user functions
+from getpass import getuser
+from os import getcwd, stat
+from pwd import getpwuid
 
 
 # shdo settings
@@ -406,11 +411,19 @@ class _terminal:
     def run_command(command, timeout=None):
 
         # open a process to run the command
+        process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+
+        # set the command timeout
         if timeout is not None:
-            process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, timeout=timeout)
-        else:
-            process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
+            timer = Timer(timeout, _terminal.kill_process, args=[process])
+            timer.start()
+
+        # run the command for a second
         stdout, stderr = process.communicate()
+
+        # stop the time if needed
+        if timeout is not None:
+            timer.cancel()
 
         # return the process (command) output
         stdout = stdout.decode()
@@ -418,13 +431,34 @@ class _terminal:
         return (stdout, stderr)
     
 
-    # TODO: check if we are in a Termux folder
+    # kill a running process
+    def kill_process(process):
+        process.kill()
+    
+
+    # check the current user
+    def get_current_folder_owner():
+        current_directory = getcwd()
+        directory_owner = stat(current_directory).st_uid
+        owner_name = None
+        try:
+            owner_name = getpwuid(directory_owner).pw_name
+        except ImportError:
+            owner_name = directory_owner
+        return owner_name
+
+
+    # check if we are in a Termux folder
     def in_termux_folder():
+        if _terminal.get_current_folder_owner() == getuser():
+            return True
         return False
     
 
-    # TODO: check if we are in a Shell folder
+    # check if we are in a Shell folder
     def in_shell_folder():
+        if _terminal.get_current_folder_owner() == "shell":
+            return True
         return False
 
 
