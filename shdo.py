@@ -6,10 +6,6 @@ from os import environ
 from os.path import exists as file_exists
 from shutil import copy as file_copy, SameFileError
 
-# import the path function
-from os.path import expanduser as path_get_user_directory
-from os.path import join as path_join
-
 # import the network functions
 from socket import socket as socket_open, AF_INET, SOCK_STREAM
 
@@ -30,7 +26,7 @@ from pwd import getpwuid
 SHDO_AUTO_BOUNCE = True
 SHDO_BOUNCE_FOLDER_PATH = "/storage/self/primary/"
 SHDO_DEBUG_FOLDER_PATH = "/data/local/tmp/"
-ADB_SERVER_PORT_FILENAME = ".last_adb_server_port"
+ADB_SERVER_PORT_FILENAME = "~/.last_adb_server_port"
 
 
 # shdo global variables
@@ -39,6 +35,7 @@ current_adb_port = None
 connected_adb_port = None
 
 
+# main function
 def main():
 
     # parse the command line parameters
@@ -472,13 +469,9 @@ class _cache:
         if verbose == True:
             print("[*] Loading adb server port from a file...", end='', flush=True)
 
-        # build the file path
-        home = path_get_user_directory("~")
-        filepath = path_join(home, ADB_SERVER_PORT_FILENAME)
-
         # open the file
         try:
-            with open(filepath, 'r') as file:
+            with open(ADB_SERVER_PORT_FILENAME, 'r') as file:
 
                 # read the adb server port from the file
                 adb_server_port = int(file.read())
@@ -501,11 +494,9 @@ class _cache:
         # build the cache file path
         if verbose == True:
             print("[*] Saving adb server port to a file...", end='', flush=True)
-        home = path_get_user_directory("~")
-        filepath = path_join(home, ADB_SERVER_PORT_FILENAME)
 
         # save the cache file
-        with open(filepath, 'w') as file:
+        with open(ADB_SERVER_PORT_FILENAME, 'w') as file:
             file.write(str(adb_server_port))
         if verbose == True:
             print("success.")
