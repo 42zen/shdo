@@ -13,7 +13,7 @@ shdo is a tool to escalate privilege (like sudo) for Android that don't need any
 
 ## How to Install
 
-To install the tool first you will need the Termux application. Because the Termux app is not updated anymore on the Play Store you will need to download it from an alternative store: [F-Droid](https://f-droid.org/fr/packages/com.termux/).
+To install the tool first you will need the **Termux** application. Because the Termux app is not updated anymore on the Play Store you will need to download it from an alternative store: [F-Droid](https://f-droid.org/fr/packages/com.termux/).
 
 After installing Termux we will use it to install three things: the Android Debug Bridge (ADB), Python 3 and Shdo.
 
@@ -35,16 +35,16 @@ And to get your pairing code just go into the Developer Settings then into Wirel
 
 The only problem is that the code disapear everytime you leave the Settings app. To bypass this problem we can use **Applications Split-Screening** to keep our Settings app alive, and enter the code in the other Termux window.
 
-![Split-Screening between Termux and Settings](split-screen.png)
+![Split-Screening between Termux and Settings](./img/split-screen.png)
 
 When the pairing is done you can run as much command as you want with **shell** privileges using shdo direclty:
 > shdo COMMAND
 
-![whoami results example](whoami.png)
+![whoami results example](./img/whoami.png)
 
 If you don't want to do the pairing every few days/weeks you can disable the **adb authorization timeout** in the Developer Settings. That way your pairing will also still works after reboots.
 
-![disable adb authorization timeout](timeout.png)
+![disable adb authorization timeout](./img/timeout.png)
 
 
 ## Credits
