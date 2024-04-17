@@ -8,7 +8,6 @@ shdo is a tool to escalate privilege (like sudo) for Android that don't need any
 - Fast pairing with **shdo-pair**
 - Fast command execution with **shdo**
 - Bruteforce all ports needed for pairing or execution
-- Automatically move scripts or executables to permissive folders
 
 
 ## How to Install
