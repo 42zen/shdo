@@ -23,9 +23,6 @@ from pwd import getpwuid
 
 
 # shdo settings
-SHDO_AUTO_BOUNCE = True
-SHDO_BOUNCE_FOLDER_PATH = "/storage/self/primary/"
-SHDO_DEBUG_FOLDER_PATH = "/data/local/tmp/"
 ADB_SERVER_PORT_FILENAME = "~/.last_adb_server_port"
 
 
@@ -133,55 +130,11 @@ def run_command(command, parameters, verbose=False):
             
             # couldn't connect to the adb server
             return None
-        
-    # auto-bounce the file or executable if needed
-    if SHDO_AUTO_BOUNCE == True and command is not None:
-
-        # check if the command is an executable (bash, elf, ...)
-        if file_exists(command) == True:
-
-            # remove extra dot
-            if command.startswith("./") == True:
-                filename = command[2:]
-
-            # check if we're in a Termux folder
-            if _terminal.in_termux_folder() == True:
-
-                # copy the file to the bounce folder
-                if verbose == True:
-                    print(f"[*] Copying the file {filename} to bounce folder...", end='', flush=True)
-                bounce_path = SHDO_BOUNCE_FOLDER_PATH + filename
-                try:
-                    file_copy(filename, bounce_path)
-                except SameFileError:
-                    pass
-                if verbose == True:
-                    print("done.")
-
-            # check if we're in a Termux folder
-            if _terminal.in_shell_folder() == False:
-
-                # copy the file to the debug folder
-                if verbose == True:
-                    print(f"[*] Copying the file {filename} to debug folder...", end='', flush=True)
-                debug_path = SHDO_DEBUG_FOLDER_PATH + filename
-                _adb.shell(f"cp '{bounce_path}' '{debug_path}'")
-                if verbose == True:
-                    print("done.")
-
-            # give execution permission to the script or executable
-            if verbose == True:
-                print(f"[*] Giving the file {filename} execution permission...", end='', flush=True)
-            _adb.shell(f"chmod 755 '{debug_path}'")
-            if verbose == True:
-                print("done.")
-            
-            # change the command by its new path
-            command = debug_path
 
     # build the full command
     full_command = f"'{command}'" if command is not None else None
-    full_command += f" {parameters}" if parameters is not None else ""
+    if command is not None:
+        full_command += f" {parameters}" if parameters is not None else ""
         
     # run the elevated command
     return _adb.execute(full_command, verbose=verbose)
